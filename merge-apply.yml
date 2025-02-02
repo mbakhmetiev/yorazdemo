@@ -2,7 +2,7 @@
 variables: 
 - group: state-data
 - name: service-connection
-  value: 'tacowagon-dev'
+  value: 'yor'
 
 trigger:
   branches:
