@@ -62,7 +62,15 @@ stages:
         TF_IN_AUTOMATION: true
         TF_INPUT: 0
         TF_LOG: INFO
-
+    - script: |
+        curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
+        sudo tar -xf yor.tar.gz -C /usr/bin/ 
+        rm yor.tar.gz 
+        sudo chmod +x /usr/bin/yor 
+        echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
+        yor --version
+    - script: |
+        yor tag --directory .
     - task: TerraformTaskV4@4
       displayName: Terraform Plan
       inputs:
@@ -78,16 +86,6 @@ stages:
         TF_IN_AUTOMATION: true
         TF_INPUT: 0
         TF_LOG: INFO
-    - script: |
-        curl -s -k https://api.github.com/repos/bridgecrewio/yor/releases/latest | jq '.assets[] | select(.name | contains("linux_386")) | select(.content_type | contains("gzip")) | .browser_download_url' -r | awk '{print "curl -L -k " $0 " -o yor.tar.gz"}' | sh
-        sudo tar -xf yor.tar.gz -C /usr/bin/ 
-        rm yor.tar.gz 
-        sudo chmod +x /usr/bin/yor 
-        echo 'alias yor="/usr/bin/yor"' >> ~/.bashrc
-        yor --version
-    - script: |
-        yor tag --directory .
-
     # Push plan file to Azure Storage Account for Apply
     - task: PublishPipelineArtifact@1
       displayName: Publish Plan File as an artifact
